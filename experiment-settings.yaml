@@ -60,8 +60,6 @@ client_scripts:
     #   - "0.2"
     tiles: "A01"
 
-
-
 scope:
   ip: "192.108.1.219"
   channels: [1,2]
