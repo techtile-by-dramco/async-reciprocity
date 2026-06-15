@@ -58,7 +58,7 @@ client_scripts:
     #   - "500"
     #   - "--delay"
     #   - "0.2"
-    tiles: "T05 T06"
+    tiles: "A01"
 
 
 
