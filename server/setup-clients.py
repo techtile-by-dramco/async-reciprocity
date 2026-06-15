@@ -59,12 +59,12 @@ if args.repos_only and args.install_only:
     print("Conflicting arguments: --repos-only & --install-only")
     parser.print_help()
     sys.exit(config.ERRORS["ARGUMENT_ERROR"])
-
+    
 if args.repos_only and args.check_uhd_only:
     print("Conflicting arguments: --repos-only & --install-only")
     parser.print_help()
     sys.exit(config.ERRORS["ARGUMENT_ERROR"])
-
+    
 if args.check_uhd_only and args.install_only:
     print("Conflicting arguments: --repos-only & --install-only")
     parser.print_help()
@@ -108,6 +108,7 @@ print("Working on", len(host_list) ,"tile(s):", tiles)
 
 # First we test connectivity
 nr_active_tiles = 0
+all_failed_tiles = []
 if test_connectivity:
     print("Testing connectivity ... ")
     playbook_path = os.path.join(config.PLAYBOOK_DIR, "ping.yaml")
@@ -126,6 +127,7 @@ if test_connectivity:
     if not (nr_active_tiles == len(host_list)):
         print("Unable to connect to all tiles.")
         print("Inactive tiles:", failed_tiles)
+        all_failed_tiles.append(failed_tiles)
         if halt_on_connectivity_failure:
             print("Aborting (halt_on_connectivity_failure = True)")
             sys.exit(config.ERRORS["CONNECTIVITY_ERROR"])
@@ -134,23 +136,8 @@ if test_connectivity:
 else:
     # we did not test connectivity so we assume all tiles are active
     nr_active_tiles = len(host_list)
-
+             
 prev_nr_active_tiles = nr_active_tiles
-
-
-print("Installing service... ")
-playbook_path = os.path.join(config.PLAYBOOK_DIR, "install-service.yaml")
-
-(nr_active_tiles, tiles, failed_tiles) = run_playbook(
-    config.PROJECT_DIR,
-    playbook_path,
-    config.INVENTORY_PATH,
-    extra_vars=None,
-    hosts=tiles,
-    mute_output=not(args.ansible_output),
-    suppress_warnings=True,
-    cleanup=True
-)
 
 if not (args.skip_apt or args.repos_only or args.check_uhd_only):
     print("Running apt update/upgrade ... ")
@@ -167,9 +154,10 @@ if not (args.skip_apt or args.repos_only or args.check_uhd_only):
         cleanup=True
     )
 
-    if not (nr_active_tiles == len(host_list)):
+    if not (nr_active_tiles == prev_nr_active_tiles):
         print("Unable to connect to all tiles.")
         print("Inactive tiles:", failed_tiles)
+        all_failed_tiles.append(failed_tiles)
         if halt_on_connectivity_failure:
             print("Aborting (halt_on_connectivity_failure = True)")
             sys.exit(config.ERRORS["CONNECTIVITY_ERROR"])
@@ -195,9 +183,10 @@ if not (args.skip_apt or args.repos_only or args.check_uhd_only):
         cleanup=True
     )
     
-    if not (nr_active_tiles == len(host_list)):
+    if not (nr_active_tiles == prev_nr_active_tiles):
         print("Unable to connect to all tiles.")
         print("Inactive tiles:", failed_tiles)
+        all_failed_tiles.append(failed_tiles)
         if halt_on_connectivity_failure:
             print("Aborting (halt_on_connectivity_failure = True)")
             sys.exit(config.ERRORS["CONNECTIVITY_ERROR"])
@@ -225,43 +214,19 @@ if (not args.install_only) and (not args.check_uhd_only):
         cleanup=True
     )
     
-    if not (nr_active_tiles == len(host_list)):
+    if not (nr_active_tiles == prev_nr_active_tiles):
         print("Unable to connect to all tiles.")
         print("Inactive tiles:", failed_tiles)
-        if halt_on_connectivity_failure:
-            print("Aborting (halt_on_connectivity_failure = True)")
-            sys.exit(config.ERRORS["CONNECTIVITY_ERROR"])
-        else:
-            print("Proceeding with", nr_active_tiles, "tiles(s):", tiles)
-       
-    print("Pulling the experiment repo:", experiment_repo ,"... ")
-    
-    (nr_active_tiles, tiles, failed_tiles) = run_playbook(
-        config.PROJECT_DIR,
-        playbook_path,
-        config.INVENTORY_PATH,
-        extra_vars={
-            'org_name': organisation,
-            'repo_name': experiment_repo
-        },
-        hosts=tiles,
-        mute_output= not(args.ansible_output),
-        suppress_warnings=True,
-        cleanup=True
-    )
-    
-    if not (nr_active_tiles == len(host_list)):
-        print("Unable to connect to all tiles.")
-        print("Inactive tiles:", failed_tiles)
+        all_failed_tiles.append(failed_tiles)
         if halt_on_connectivity_failure:
             print("Aborting (halt_on_connectivity_failure = True)")
             sys.exit(config.ERRORS["CONNECTIVITY_ERROR"])
         else:
             print("Proceeding with", nr_active_tiles, "tiles(s):", tiles)
     
-    print("Pulled all repositories on tiles(s):", tiles)
+    print("Pulled tile-managament repository on tiles(s):", tiles)
     prev_nr_active_tiles = nr_active_tiles
-
+    
 if (not args.install_only) and (not args.repos_only):
     print("Checking uhd ... ")
     playbook_path = os.path.join(config.PLAYBOOK_DIR, "run-script.yaml")
@@ -281,9 +246,10 @@ if (not args.install_only) and (not args.repos_only):
         cleanup=True
     )
     
-    if not (nr_active_tiles == len(host_list)):
+    if not (nr_active_tiles == prev_nr_active_tiles):
         print("Unable to connect to all tiles.")
         print("Inactive tiles:", failed_tiles)
+        all_failed_tiles.append(failed_tiles)
         if halt_on_connectivity_failure:
             print("Aborting (halt_on_connectivity_failure = True)")
             sys.exit(config.ERRORS["CONNECTIVITY_ERROR"])
@@ -291,5 +257,10 @@ if (not args.install_only) and (not args.repos_only):
             print("Proceeding with", nr_active_tiles, "tiles(s):", tiles)
 
     print("UHD python API available on tiles(s):", tiles)
-
+    
+failed_summary = " ".join(all_failed_tiles)
+if failed_summary:
+    print("Not all operations were succesful on every tile.")
+    print("Check tiles:", failed_summary)
+    
 print("Done.")

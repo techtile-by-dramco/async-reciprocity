@@ -5,7 +5,7 @@ import argparse
 import config
 
 parser = argparse.ArgumentParser(
-    description="Run (or halt) an experiment client script the raspberry pi's on the tiles."
+    description="Reboot the raspberry pi's on the tiles."
 )
 
 parser.add_argument(
@@ -14,24 +14,7 @@ parser.add_argument(
     help="Enable ansible output"
 )
 
-parser.add_argument(
-    "--start",
-    action="store_true",
-    help="Start the script"
-)
-
-parser.add_argument(
-    "--stop",
-    action="store_true",
-    help="Stop the script"
-)
-
 args = parser.parse_args()
-
-if args.start and args.stop:
-    print("Conflicting arguments: --sart & --stop")
-    parser.print_help()
-    sys.exit(config.ERRORS["ARGUMENT_ERROR"])
 
 # We start by setting some paths
 settings_path = os.path.join(config.PROJECT_DIR, "experiment-settings.yaml")
@@ -96,62 +79,33 @@ else:
     
 prev_nr_active_tiles = nr_active_tiles
 
-playbook_path = os.path.join(config.PLAYBOOK_DIR, "manage-service.yaml")
-if args.start:
-    (nr_active_tiles, tiles, failed_tiles) = run_playbook(
-        config.PROJECT_DIR,
-        playbook_path,
-        config.INVENTORY_PATH,
-        extra_vars={
-            'service_state': 'started',
-        },
-        hosts=tiles,
-        mute_output=not(args.ansible_output),
-        suppress_warnings=True,
-        cleanup=True
-    )
+print("Rebooting ... ")
+playbook_path = os.path.join(config.PLAYBOOK_DIR, "reboot.yaml")
 
-    if not (nr_active_tiles == prev_nr_active_tiles):
-        print("Unable to connect to all tiles.")
-        print("Inactive tiles:", failed_tiles)
-        all_failed_tiles.append(failed_tiles)
-        if halt_on_connectivity_failure:
-            print("Aborting (halt_on_connectivity_failure = True)")
-            sys.exit(config.ERRORS["CONNECTIVITY_ERROR"])
-        else:
-            print("Proceeding with", nr_active_tiles, "tiles(s):", tiles)
+(nr_active_tiles, tiles, failed_tiles) = run_playbook(
+    config.PROJECT_DIR,
+    playbook_path,
+    config.INVENTORY_PATH,
+    extra_vars=None,
+    hosts=tiles,
+    mute_output=not(args.ansible_output),
+    suppress_warnings=True,
+    cleanup=True
+)
 
-    prev_nr_active_tiles = nr_active_tiles
+if not (nr_active_tiles == prev_nr_active_tiles):
+    print("Unable to connect to all tiles.")
+    print("Inactive tiles:", failed_tiles)
+    all_failed_tiles.append(failed_tiles)
+    if halt_on_connectivity_failure:
+        print("Aborting (halt_on_connectivity_failure = True)")
+        sys.exit(config.ERRORS["CONNECTIVITY_ERROR"])
+    else:
+        print("Proceeding with", nr_active_tiles, "tiles(s):", tiles)
 
-    print("Experiment started on tiles(s):", tiles)
+prev_nr_active_tiles = nr_active_tiles
 
-if args.stop:
-    (nr_active_tiles, tiles, failed_tiles) = run_playbook(
-        config.PROJECT_DIR,
-        playbook_path,
-        config.INVENTORY_PATH,
-        extra_vars={
-            'service_state': 'stopped',
-        },
-        hosts=tiles,
-        mute_output=not(args.ansible_output),
-        suppress_warnings=True,
-        cleanup=True
-    )
-
-    if not (nr_active_tiles == prev_nr_active_tiles):
-        print("Unable to connect to all tiles.")
-        print("Inactive tiles:", failed_tiles)
-        all_failed_tiles.append(failed_tiles)
-        if halt_on_connectivity_failure:
-            print("Aborting (halt_on_connectivity_failure = True)")
-            sys.exit(config.ERRORS["CONNECTIVITY_ERROR"])
-        else:
-            print("Proceeding with", nr_active_tiles, "tiles(s):", tiles)
-
-    prev_nr_active_tiles = nr_active_tiles
-
-    print("Experiment stopped on tiles(s):", tiles)
+print("Rebooted tiles(s):", tiles)
 
 failed_summary = " ".join(all_failed_tiles)
 if failed_summary:
