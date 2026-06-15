@@ -968,96 +968,96 @@ def main():
             DEG,
         )
 
-        start_next_cmd += (
-            cmd_time + 4.0 + CAPTURE_TIME
-        )  # Schedule next command after delay
+        # start_next_cmd += (
+        #     cmd_time + 4.0 + CAPTURE_TIME
+        # )  # Schedule next command after delay
 
-        # -------------------------------------------------------------------------
-        # STEP 2: Perform internal loopback measurement with reference signal
-        # -------------------------------------------------------------------------
+        # # -------------------------------------------------------------------------
+        # # STEP 2: Perform internal loopback measurement with reference signal
+        # # -------------------------------------------------------------------------
 
-        file_name_state = file_name + "_loopback"
-        measure_loopback(
-            usrp,
-            tx_streamer,
-            rx_streamer,
-            quit_event,
-            result_queue,
-            at_time=start_next_cmd,
-        )
+        # file_name_state = file_name + "_loopback"
+        # measure_loopback(
+        #     usrp,
+        #     tx_streamer,
+        #     rx_streamer,
+        #     quit_event,
+        #     result_queue,
+        #     at_time=start_next_cmd,
+        # )
 
-        # Retrieve loopback phase result
-        phi_LB = result_queue.get()
+        # # Retrieve loopback phase result
+        # phi_LB = result_queue.get()
 
-        # Print loopback phase
-        logger.info("Phase LB reference signal: %s (rad) / %s%s", fmt(phi_LB), fmt(np.rad2deg(phi_LB)), DEG)
+        # # Print loopback phase
+        # logger.info("Phase LB reference signal: %s (rad) / %s%s", fmt(phi_LB), fmt(np.rad2deg(phi_LB)), DEG)
 
-        start_next_cmd += cmd_time + 2.0 + CAPTURE_TIME  # Schedule next command
+        # start_next_cmd += cmd_time + 2.0 + CAPTURE_TIME  # Schedule next command
 
-        # -------------------------------------------------------------------------
-        # STEP 3: Load cable phase correction from YAML configuration (if available)
-        # -------------------------------------------------------------------------
-        phi_cable = 0
-        with open(
-            os.path.join(os.path.dirname(__file__), "ref-RF-cable.yml"), "r"
-        ) as phases_yaml:
-            try:
-                phases_dict = yaml.safe_load(phases_yaml)
-                if HOSTNAME in phases_dict.keys():
-                    phi_cable = phases_dict[HOSTNAME]
-                    logger.debug(f"Applying cable phase correction: {phi_cable}")
-                else:
-                    logger.error("Phase offset not found in ref-RF-cable.yml")
-            except yaml.YAMLError as exc:
-                print(exc)
-
-        # -------------------------------------------------------------------------
-        # STEP 4: Add additional phase to ensure right measurement with the scope
-        # -------------------------------------------------------------------------
-        # phi_offset = 0
+        # # -------------------------------------------------------------------------
+        # # STEP 3: Load cable phase correction from YAML configuration (if available)
+        # # -------------------------------------------------------------------------
+        # phi_cable = 0
         # with open(
-        #     os.path.join(os.path.dirname(__file__), args.tx_phase_file), "r"
+        #     os.path.join(os.path.dirname(__file__), "ref-RF-cable.yml"), "r"
         # ) as phases_yaml:
         #     try:
         #         phases_dict = yaml.safe_load(phases_yaml)
         #         if HOSTNAME in phases_dict.keys():
-        #             phi_BF = phases_dict[HOSTNAME]
-        #             logger.debug(f"Applying BF phase: {phi_BF}")
+        #             phi_cable = phases_dict[HOSTNAME]
+        #             logger.debug(f"Applying cable phase correction: {phi_cable}")
         #         else:
-        #             logger.error("Phase offset not found in tx-phases-benchmark.yml")
+        #             logger.error("Phase offset not found in ref-RF-cable.yml")
         #     except yaml.YAMLError as exc:
         #         print(exc)
 
-        # -------------------------------------------------------------------------
-        # STEP 5: Benchmark without phase-aligned beamforming
-        # -------------------------------------------------------------------------
+        # # -------------------------------------------------------------------------
+        # # STEP 4: Add additional phase to ensure right measurement with the scope
+        # # -------------------------------------------------------------------------
+        # # phi_offset = 0
+        # # with open(
+        # #     os.path.join(os.path.dirname(__file__), args.tx_phase_file), "r"
+        # # ) as phases_yaml:
+        # #     try:
+        # #         phases_dict = yaml.safe_load(phases_yaml)
+        # #         if HOSTNAME in phases_dict.keys():
+        # #             phi_BF = phases_dict[HOSTNAME]
+        # #             logger.debug(f"Applying BF phase: {phi_BF}")
+        # #         else:
+        # #             logger.error("Phase offset not found in tx-phases-benchmark.yml")
+        # #     except yaml.YAMLError as exc:
+        # #         print(exc)
 
-        alive_socket = context.socket(zmq.REQ)
-        alive_socket.connect(f"tcp://{SERVER_IP}:{5558}")
-        logger.debug("Sending TX MODE")
-        alive_socket.send_string(f"{HOSTNAME} TX")
-        alive_socket.close()
+        # # -------------------------------------------------------------------------
+        # # STEP 5: Benchmark without phase-aligned beamforming
+        # # -------------------------------------------------------------------------
+
+        # alive_socket = context.socket(zmq.REQ)
+        # alive_socket.connect(f"tcp://{SERVER_IP}:{5558}")
+        # logger.debug("Sending TX MODE")
+        # alive_socket.send_string(f"{HOSTNAME} TX")
+        # alive_socket.close()
 
 
-        # no negative sign for LB and P as here in the code REF-P and REF-LB is done. In the paper it is vice versa. Hence, phi_LB = - phi_L-R in the paper
-        # same reason here - phi_cable
-        phase_corr = phi_LB - np.deg2rad(phi_cable) - np.deg2rad(phi_cable) + phi_P
-        logger.info(
-            "Phase correction: %s (rad) / %s%s",
-            fmt(phase_corr),
-            fmt(np.rad2deg(phase_corr)),
-            DEG,
-        )
+        # # no negative sign for LB and P as here in the code REF-P and REF-LB is done. In the paper it is vice versa. Hence, phi_LB = - phi_L-R in the paper
+        # # same reason here - phi_cable
+        # phase_corr = phi_LB - np.deg2rad(phi_cable) - np.deg2rad(phi_cable) + phi_P
+        # logger.info(
+        #     "Phase correction: %s (rad) / %s%s",
+        #     fmt(phase_corr),
+        #     fmt(np.rad2deg(phase_corr)),
+        #     DEG,
+        # )
 
-        tx_phase_coh(
-            usrp,
-            tx_streamer,
-            quit_event,
-            # phase_corr=phi_LB + phi_P + np.deg2rad(phi_cable),
-            phase_corr=phase_corr,
-            at_time=start_next_cmd,
-            long_time=True,  # Set long_time True if you want to transmit longer than 10 seconds
-        )
+        # tx_phase_coh(
+        #     usrp,
+        #     tx_streamer,
+        #     quit_event,
+        #     # phase_corr=phi_LB + phi_P + np.deg2rad(phi_cable),
+        #     phase_corr=phase_corr,
+        #     at_time=start_next_cmd,
+        #     long_time=True,  # Set long_time True if you want to transmit longer than 10 seconds
+        # )
 
         print("DONE")
 
