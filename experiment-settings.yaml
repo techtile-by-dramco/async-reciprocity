@@ -49,6 +49,18 @@ experiment_config:
   # target moved to center of LoS: max at: 3.037429, 1.751323 [0.24162910546]
   # new LoS target becomes: 3.52068721094 1.7493585205078126, 0.2528133087158203
 
+# List of scripts that need to run on the clients (make sure it is in the <your-repo>/client folder)
+# One script per client, but different scripts can be deployed
+client_scripts:
+  - name: "run_reciprocity.py"
+    # args:
+    #   - "16"
+    #   - "500"
+    #   - "--delay"
+    #   - "0.2"
+    tiles: "T05 T06"
+
+
 
 scope:
   ip: "192.108.1.219"
