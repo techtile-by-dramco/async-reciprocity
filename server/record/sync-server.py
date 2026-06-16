@@ -54,8 +54,6 @@ sync_socket = context.socket(zmq.PUB)
 # Binds the socket to a predefined port on localhost
 sync_socket.bind("tcp://{}:{}".format(host, sync_port))
 
-exit()
-
 # Create a SUB socket to listen for subscribers
 alive_socket = context.socket(zmq.REP)
 alive_socket.bind("tcp://{}:{}".format(host, alive_port))
