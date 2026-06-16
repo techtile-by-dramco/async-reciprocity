@@ -37,6 +37,6 @@ TX_TIME: !!float 72000
 # Total transmission time in seconds (here, 2 hours).
 
 # SERVER_IP: "192.168.10.54" 
-SERVER_IP: "192.108.2.57"  # TECHTILE JARNE SERVER
+SERVER_IP: "192.108.2.241"  # TECHTILE JARNE SERVER
 # SERVER_IP: "192.108.10.38"  # Client 9 Gilles
 # IP address of the server to connect to.
