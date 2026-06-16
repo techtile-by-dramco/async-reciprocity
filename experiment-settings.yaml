@@ -61,8 +61,8 @@ client_scripts:
     tiles: "T05 T06"
   - name: "run-ref.py"
     args:
-    - '--config-file'
-    - '/home/pi/async-reciprocity/experiment-settings.yaml'
+    # - '--config-file'
+    # - '/home/pi/async-reciprocity/experiment-settings.yaml'
     - '--args'
     - "type=b200"
     - '--freq'
