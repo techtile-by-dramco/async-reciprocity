@@ -58,7 +58,7 @@ client_scripts:
     #   - "500"
     #   - "--delay"
     #   - "0.2"
-    tiles: "A01"
+    tiles: "T05 T06 T07 T08"
 
 scope:
   ip: "192.108.1.219"
