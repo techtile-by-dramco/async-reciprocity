@@ -59,6 +59,34 @@ client_scripts:
     #   - "--delay"
     #   - "0.2"
     tiles: "T05 T06"
+  - name: "run-ref.py"
+    args:
+    - '--config-file'
+    - '/home/pi/ELLIIIT-dataset-26/experiment-settings.yaml'
+    - '--args'
+    - "type=b200"
+    - '--freq'
+    - '920e6'
+    - '--rate'
+    - '250e3'
+    - '--duration'
+    - '1E6'
+    - '--channels'
+    - '0'
+    - '--wave-ampl'
+    - '0.8'
+    - '--gain'
+    - '73'
+    - '--waveform'
+    - 'sine'
+    - '--wave-freq'
+    - '0'
+    tiles: "T04"
+  - name: "usrp_pilot.py"
+    args:
+    - "--phase"
+    - "0"
+    tiles: "T03"
 
 scope:
   ip: "192.108.1.219"
