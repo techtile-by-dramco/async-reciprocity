@@ -142,44 +142,44 @@ with open(output_path, "w") as f:
         sync_socket.send_string(f"{meas_id} {unique_id}")  # str(meas_id)
         print(f"SYNC {meas_id}")
 
+        # In comment for testing 16/06/2026
+        # # *** EXTENSION *** JVM
 
-        # *** EXTENSION *** JVM
+        # # Wait for all subscribers to send a TX MODE message
+        # print(f"Waiting for {num_subscribers} subscribers to send a TX Mode ...")
 
-        # Wait for all subscribers to send a TX MODE message
-        print(f"Waiting for {num_subscribers} subscribers to send a TX Mode ...")
+        # # Track number of messages received from subscribers
+        # messages_received = 0
+        # start_processing = None
 
-        # Track number of messages received from subscribers
-        messages_received = 0
-        start_processing = None
+        # while messages_received < num_subscribers:
+        #     # Poll the socket for incoming messages with a 1-second timeout
+        #     socks = dict(poller.poll(1000))
 
-        while messages_received < num_subscribers:
-            # Poll the socket for incoming messages with a 1-second timeout
-            socks = dict(poller.poll(1000))
+        #     # If some messages were received but no new message comes within WAIT_TIMEOUT, break
+        #     if messages_received > 2 and time.time() - new_msg_received > WAIT_TIMEOUT:
+        #         break
 
-            # If some messages were received but no new message comes within WAIT_TIMEOUT, break
-            if messages_received > 2 and time.time() - new_msg_received > WAIT_TIMEOUT:
-                break
+        #     if alive_socket in socks and socks[alive_socket] == zmq.POLLIN:
+        #         # Record time when a new message is received
+        #         new_msg_received = time.time()
 
-            if alive_socket in socks and socks[alive_socket] == zmq.POLLIN:
-                # Record time when a new message is received
-                new_msg_received = time.time()
+        #         # Receive the message string from the subscriber
+        #         message = alive_socket.recv_string()
+        #         messages_received += 1
 
-                # Receive the message string from the subscriber
-                message = alive_socket.recv_string()
-                messages_received += 1
+        #         # Print received message and write it to the YAML file
+        #         print(f"{message} ({messages_received}/{num_subscribers})")
 
-                # Print received message and write it to the YAML file
-                print(f"{message} ({messages_received}/{num_subscribers})")
+        #         # Process the request (example placeholder)
+        #         response = "Response from server"
 
-                # Process the request (example placeholder)
-                response = "Response from server"
+        #         # Send response back to the subscriber
+        #         alive_socket.send_string(response)
 
-                # Send response back to the subscriber
-                alive_socket.send_string(response)
+        # print(f"Wait 10s ...")
 
-        print(f"Wait 10s ...")
-
-        time.sleep(10)
+        # time.sleep(10)
 
         # print(f"Measure phases")
 
