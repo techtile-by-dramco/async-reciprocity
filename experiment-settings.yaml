@@ -81,12 +81,12 @@ client_scripts:
     - 'sine'
     - '--wave-freq'
     - '0'
-    tiles: "T04"
-  - name: "usrp_pilot.py"
-    args:
-    - "--phase"
-    - "0"
-    tiles: "T03"
+    tiles: "T03 T04"
+  # - name: "usrp_pilot.py"
+  #   args:
+  #   - "--phase"
+  #   - "0"
+  #   tiles: "T03"
 
 scope:
   ip: "192.108.1.219"
