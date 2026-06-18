@@ -81,7 +81,7 @@ client_scripts:
     - 'sine'
     - '--wave-freq'
     - '0'
-    tiles: "T03 T04"
+    tiles: "T08 T04"
   # - name: "usrp_pilot.py"
   #   args:
   #   - "--phase"
