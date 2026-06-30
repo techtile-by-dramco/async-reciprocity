@@ -237,6 +237,8 @@ def rx_ref(usrp, rx_streamer, quit_event, duration, result_queue, start_time=Non
             "Saving to: %s", file_name_state
         )
 
+        logger.debug("Current working directory: %s", os.getcwd())
+
         phase_ch0, freq_slope_ch0_before, freq_slope_ch0_after = tools.get_phases_and_apply_bandpass(
             iq_samples[0, :]
         )
